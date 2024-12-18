@@ -1,0 +1,23 @@
+{
+  "name": "contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.mjs",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Matteus Grodzki",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ignition-ethers": "^0.15.8",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.17",
+    "solidity-coverage": "^0.8.14"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
+}
