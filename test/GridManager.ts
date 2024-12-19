@@ -41,7 +41,7 @@ describe('GridManager', () => {
             await expect(gridManager.connect(owner).createGrid('grid-123', 'SE', 'Sweden')).to.emit(gridManager, 'NewGridCreated');
         });
 
-        it('should not be able to create a grid with a non-authorized wallet address', async () => {
+        it('should revert if not called by authorized grid station', async () => {
             const { gridManager, addr1 } = await deployContractFixture();
             await expect(gridManager.connect(addr1).createGrid('grid-123', 'SE', 'Sweden')).to.be.revertedWithCustomError(gridManager, 'NotAuthorized');
         });
@@ -105,6 +105,54 @@ describe('GridManager', () => {
             expect(gridData.createdBy).to.equal(owner.address);
             expect(gridData.exists).to.be.true;
             expect(gridData.id).to.equal(gridIds[lastGridId]);
+        });
+    });
+
+    describe('isUserConnected', async () => {
+        it('should be reverted if no user is found', async () => {
+            const { gridManager, addr1 } = await deployContractFixture();
+            await expect(gridManager.connect(addr1).isUserConnected(addr1)).to.be.revertedWithCustomError(gridManager, 'NoUserInGrid');
+        });
+
+        it('should return true if user is connected', async () => {
+            const { gridManager, addr1 } = await deployContractFixture();
+            const gridIds = await gridManager.connect(addr1).listGridIds();
+            const randomGridId = gridIds[0];
+            await expect(gridManager.connect(addr1).addUserToGrid(randomGridId)).to.emit(gridManager, 'UserConnectedToGrid');
+
+            const isConnected = await gridManager.connect(addr1).isUserConnected(addr1);
+            expect(isConnected).to.equal(true);
+        });
+
+    });
+
+    describe('getUserGridData', async () => {
+        it('should revert if user is not connected to a grid', async () => {
+            const { gridManager, addr1 } = await deployContractFixture();
+            await expect(gridManager.connect(addr1).getUserGridData(addr1)).to.be.revertedWithCustomError(gridManager, 'NoUserInGrid');
+        });
+
+        it('should return a struct of grid data if user is connected', async () => {
+            const { gridManager, owner, addr1 } = await deployContractFixture();
+            const gridIds = await gridManager.connect(addr1).listGridIds();
+            const randomGridId = gridIds[0];
+            await gridManager.connect(addr1).addUserToGrid(randomGridId);
+            const gridsData = await gridManager.connect(addr1).listGrids();
+
+            const existingGridData = gridsData.find(grid => grid.id === randomGridId);
+
+            expect(existingGridData).to.not.be.undefined;
+
+            const userConnectedGridData = await gridManager.connect(addr1).getUserGridData(addr1);
+
+            expect(existingGridData.name).to.equal(userConnectedGridData.name);
+            expect(existingGridData.countryCode).to.equal(userConnectedGridData.countryCode);
+            expect(existingGridData.countryName).to.equal(userConnectedGridData.countryName);
+            expect(existingGridData.userCount).to.equal(1);
+            expect(existingGridData.createdBy).to.equal(owner.address);
+            expect(existingGridData.exists).to.be.true;
+            expect(existingGridData.id).to.equal(randomGridId);
+
         });
     });
 

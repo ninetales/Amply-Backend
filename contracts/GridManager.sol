@@ -23,6 +23,7 @@ contract GridManager {
     error DuplicateGridId(bytes32 gridId);
     error UserAlreadyInGrid(bytes32 gridId, address user);
     error NoGridFound(bytes32 gridId);
+    error NoUserInGrid(address _user);
     error NotAuthorized(address device);
     error NotAdmin(address user);
     error InvalidCall(address sender);
@@ -95,6 +96,20 @@ contract GridManager {
         authorizedGridStations[_device] = true;
 
         emit AuthorizedNewDevice(_device);
+    }
+
+    function isUserConnected(address _user) public view returns (bool){
+        if(userInGrid[_user] == bytes32(0)) revert NoUserInGrid(_user);
+
+        return true;
+    }
+
+    function getUserGridData(address _user) public view returns(Grid memory){
+        isUserConnected(_user);
+
+        bytes32 _gridId = userInGrid[_user];
+
+        return grids[_gridId];
     }
 
     function addUserToGrid(bytes32 _gridId) public {
