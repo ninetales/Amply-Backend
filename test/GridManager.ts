@@ -6,7 +6,7 @@ import { ethers } from 'ethers';
 
 describe('GridManager', () => {
 
-    const gridName = 'Grid-1';
+    const gridName = 'Helsingborg';
     const countryCode = 'SE';
     const country = 'Sweden';
     const gridId = ethers.solidityPackedKeccak256(['string', 'string'], [gridName, countryCode]);
@@ -163,7 +163,7 @@ describe('GridManager', () => {
             await expect(gridManager.connect(addr1).addUserToGrid(gridId)).to.emit(gridManager, 'UserConnectedToGrid');
         });
 
-        it('should revert with an error if user already exists', async () => {
+        it('should revert with an error if user already exists in a grid', async () => {
             const { gridManager, owner, addr1 } = await deployContractFixture();
             await gridManager.connect(addr1).addUserToGrid(gridId);
             await expect(gridManager.connect(addr1).addUserToGrid(gridId)).to.be.revertedWithCustomError(gridManager, 'UserAlreadyInGrid');
@@ -175,6 +175,23 @@ describe('GridManager', () => {
             await expect(gridManager.connect(owner).addUserToGrid(badGridId)).to.be.revertedWithCustomError(gridManager, 'NoGridFound');
         });
 
+    });
+
+    describe('removeUserFromGrid', async () => {
+        it('should remove a user from a grid', async () => {
+            const { gridManager, addr1 } = await deployContractFixture();
+
+            await expect(gridManager.connect(addr1).addUserToGrid(gridId)).to.emit(gridManager, 'UserConnectedToGrid');
+
+            let gridData = await gridManager.grids(gridId);
+
+            await expect(Number(gridData.userCount)).to.equal(1);
+
+            await expect(gridManager.connect(addr1).removeUserFromGrid()).to.emit(gridManager, 'UserRemovedFromGrid');
+
+            gridData = await gridManager.grids(gridId);
+            await expect(Number(gridData.userCount)).to.equal(0);
+        });
     });
 
     describe('fallback', async () => {

@@ -9,12 +9,12 @@ contract GridManager {
         owner = msg.sender;
         addAuthorizedDevice(msg.sender);
 
-        createGrid('Grid-1', 'SE', 'Sweden');
-        createGrid("Grid-1", "DK", "Denmark");
-        createGrid("Grid-1", "NO", "Norway");
-        createGrid("Grid-1", "FI", "Finland");
-        createGrid("Grid-1", "GB", "United Kingdom");
-        createGrid("Grid-1", "IT", "Italy");
+        createGrid('Helsingborg', 'SE', 'Sweden');
+        createGrid("Copenhagen", "DK", "Denmark");
+        createGrid("Oslo", "NO", "Norway");
+        createGrid("Helsinki", "FI", "Finland");
+        createGrid("London", "GB", "United Kingdom");
+        createGrid("Milano", "IT", "Italy");
     }
 
     // ==============================================================
@@ -33,8 +33,8 @@ contract GridManager {
     // ==============================================================
     event NewGridCreated(bytes32 gridId, string name, string countryCode, string countryName);
     event UserConnectedToGrid(address user, bytes32 gridId);
+    event UserRemovedFromGrid(address user);
     event AuthorizedNewDevice(address device);
-
 
     // ==============================================================
     // Structs
@@ -120,6 +120,15 @@ contract GridManager {
         grids[_gridId].userCount++;
 
         emit UserConnectedToGrid(msg.sender, _gridId);
+    }
+
+    function removeUserFromGrid() public {
+        
+        bytes32 _gridId = userInGrid[msg.sender];
+        grids[_gridId].userCount--;
+        delete userInGrid[msg.sender];
+        
+        emit UserRemovedFromGrid(msg.sender);
     }
 
     function listGridIds() public view returns (bytes32[] memory) {
