@@ -21,6 +21,8 @@ contract EnergyStorage {
     // Events
     // ==============================================================
     event TradingAddressAdded(address tradingContractAddress);
+    event ReducedEnergy(address user, uint256 kWh);
+    event AddedEnergy(address user, uint256 kWh);
 
     // ==============================================================
     // Maps
@@ -56,11 +58,15 @@ contract EnergyStorage {
     function addEnergy(address _user, uint256 _kWh) external onlyAuthorized(_user) {
         if(_kWh <= 0) revert ToLowkWh(_kWh);
         energySupply[_user] += _kWh;
+
+        emit AddedEnergy(_user, _kWh);
     }
 
     function reduceEnergy(address _user, uint256 _kWh) external onlyAuthorized(_user) {
         if(energySupply[_user] < _kWh) revert EnergySupplyToLow(_kWh);
         energySupply[_user] -= _kWh;
+        
+        emit ReducedEnergy(_user, _kWh);
     }
 
     function getEnergySupply(address _user) external view returns(uint256) {

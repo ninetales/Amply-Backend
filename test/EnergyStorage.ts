@@ -40,7 +40,8 @@ describe('EnergyStorage', async () => {
             const { energyStorage, addr1 } = await deployContractFixture();
             let userEnergyStorage = await energyStorage.connect(addr1).getEnergySupply(addr1);
             expect(userEnergyStorage).to.equal(0);
-            await energyStorage.connect(addr1).addEnergy(addr1, 5);
+
+            await expect(energyStorage.connect(addr1).addEnergy(addr1, 5)).to.emit(energyStorage, 'AddedEnergy');;;
             userEnergyStorage = await energyStorage.connect(addr1).getEnergySupply(addr1);
             expect(userEnergyStorage).to.equal(5);
         });
@@ -68,7 +69,7 @@ describe('EnergyStorage', async () => {
             userEnergyStorage = await energyStorage.connect(addr1).getEnergySupply(addr1);
             expect(userEnergyStorage).to.equal(5);
 
-            await energyStorage.connect(addr1).reduceEnergy(addr1, 5);
+            await expect(energyStorage.connect(addr1).reduceEnergy(addr1, 5)).to.emit(energyStorage, 'ReducedEnergy');;
             userEnergyStorage = await energyStorage.connect(addr1).getEnergySupply(addr1);
             expect(userEnergyStorage).to.equal(0);
         });
