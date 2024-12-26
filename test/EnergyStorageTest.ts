@@ -6,7 +6,7 @@ describe('EnergyStorage', async () => {
 
     async function deployContractFixture() {
         const [owner, addr1, addr2] = await hre.ethers.getSigners();
-        const EnergyStorage = await hre.ethers.getContractFactory('EnergyStorage');
+        const EnergyStorage = await hre.ethers.getContractFactory("contracts/EnergyStorage.sol:EnergyStorage");
         const energyStorage = await EnergyStorage.deploy();
         await energyStorage.waitForDeployment();
         return { energyStorage, owner, addr1, addr2 };
