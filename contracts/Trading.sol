@@ -11,7 +11,7 @@ interface EnergyStorage {
 
 contract Trading is ReentrancyGuard {
     address private owner;
-    uint256 private constant MINIMUM_PRICE = 1;
+    uint256 private constant MINIMUM_PRICE = 0.001 ether;
     uint256 private constant MINIMUM_KWH = 3;
 
 
@@ -206,7 +206,7 @@ contract Trading is ReentrancyGuard {
         // Calculate total price for the trade
         uint256 totalPrice = trade.kWh * trade.pricePerkWh;
 
-        // Check if the buyer sent the exact amount of ETH required
+        // Check if the buyer sent the exact amount of WEI required
         if (msg.value != totalPrice) revert IncorrectPayment(msg.value, totalPrice);
 
         // Transfer funds to the seller

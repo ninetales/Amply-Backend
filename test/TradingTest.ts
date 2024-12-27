@@ -61,7 +61,7 @@ describe('Trading', async () => {
             const { trading, energyStorage, seller } = await deployContractFixture();
 
             const _kWh = 10;
-            const _pricePerkWh = 5;
+            const _pricePerkWh = hre.ethers.parseEther("0.001");
             const _sourceTypeIds = [1, 2];
 
             await energyStorage.connect(seller).addEnergy(seller.address, 20);
@@ -78,7 +78,7 @@ describe('Trading', async () => {
             const { trading, energyStorage, seller } = await deployContractFixture();
 
             const _kWh = 10;
-            const _pricePerkWh = 0;
+            const _pricePerkWh = hre.ethers.parseEther("0");
             const _sourceTypeIds = [1, 2];
 
             await energyStorage.connect(seller).addEnergy(seller.address, 20);
@@ -94,7 +94,7 @@ describe('Trading', async () => {
             const { trading, energyStorage, seller } = await deployContractFixture();
 
             const _kWh = 2;
-            const _pricePerkWh = 1;
+            const _pricePerkWh = hre.ethers.parseEther("0.001");
             const _sourceTypeIds = [1, 2];
 
             await energyStorage.connect(seller).addEnergy(seller.address, 20);
@@ -111,7 +111,7 @@ describe('Trading', async () => {
             const { trading, energyStorage, seller } = await deployContractFixture();
 
             const _kWh = 5;
-            const _pricePerkWh = 1;
+            const _pricePerkWh = hre.ethers.parseEther("0.001");
             const _sourceTypeIds = [1, 2];
 
             await energyStorage.connect(seller).addEnergy(seller.address, 2);
@@ -128,7 +128,7 @@ describe('Trading', async () => {
             const { trading, energyStorage, seller } = await deployContractFixture();
 
             const _kWh = 5;
-            const _pricePerkWh = 1;
+            const _pricePerkWh = hre.ethers.parseEther("0.001");
             const _sourceTypeIds = [1, 2];
 
             await energyStorage.connect(seller).addEnergy(seller.address, 10);
@@ -142,6 +142,39 @@ describe('Trading', async () => {
 
         });
 
+
+        it('should add energy to the buyers energy supply', async () => {
+
+            const { trading, energyStorage, buyer, seller } = await deployContractFixture();
+
+            const _kWh = BigInt(5);
+            const _pricePerkWh = hre.ethers.parseEther("0.001");
+            const _sourceTypeIds = [1, 2];
+            const _totalPriceInEth = _kWh * _pricePerkWh;
+
+            await energyStorage.connect(seller).addEnergy(seller, 10);
+            let sellerStorage = await energyStorage.connect(seller).getEnergySupply(seller);
+            expect(sellerStorage).to.equal(10);
+
+            await trading.connect(seller).createTrade(gridId, _kWh, _pricePerkWh, _sourceTypeIds);
+
+            sellerStorage = await energyStorage.connect(seller).getEnergySupply(seller);
+            expect(sellerStorage).to.equal(5);
+
+            let buyerStorage = await energyStorage.connect(buyer).getEnergySupply(buyer);
+            expect(buyerStorage).to.equal(0);
+
+            const activeTrades = await trading.connect(buyer).getActiveTrades(gridId);
+            expect(activeTrades[0].isActive).to.be.true;
+            const tradeId = activeTrades[0].tradeId;
+
+            await expect(trading.connect(buyer).buyTrade(gridId, tradeId, { value: _totalPriceInEth })).to.emit(trading, 'TradeBought');
+
+            buyerStorage = await energyStorage.connect(buyer).getEnergySupply(buyer);
+            expect(buyerStorage).to.equal(5);
+
+        });
+
     });
 
     describe('cancelTrade', async () => {
@@ -149,7 +182,7 @@ describe('Trading', async () => {
             const { trading, energyStorage, owner, seller } = await deployContractFixture();
 
             const _kWh = 5;
-            const _pricePerkWh = 1;
+            const _pricePerkWh = hre.ethers.parseEther("0.001");
             const _sourceTypeIds = [1, 2];
 
             await energyStorage.connect(seller).addEnergy(seller.address, 10);
@@ -176,7 +209,7 @@ describe('Trading', async () => {
             const { trading, energyStorage, owner, seller } = await deployContractFixture();
 
             const _kWh = 5;
-            const _pricePerkWh = 1;
+            const _pricePerkWh = hre.ethers.parseEther("0.001");
             const _sourceTypeIds = [1, 2];
 
             await energyStorage.connect(seller).addEnergy(seller.address, 10);
@@ -201,7 +234,7 @@ describe('Trading', async () => {
             const { trading, energyStorage, owner, seller } = await deployContractFixture();
 
             const _kWh = 5;
-            const _pricePerkWh = 1;
+            const _pricePerkWh = hre.ethers.parseEther("0.001");
             const _sourceTypeIds = [1, 2];
 
             await energyStorage.connect(seller).addEnergy(seller.address, 10);
@@ -226,7 +259,7 @@ describe('Trading', async () => {
             const { trading, energyStorage, owner, seller } = await deployContractFixture();
 
             const _kWh = 5;
-            const _pricePerkWh = 1;
+            const _pricePerkWh = hre.ethers.parseEther("0.001");
             const _sourceTypeIds = [1, 2];
 
             await energyStorage.connect(seller).addEnergy(seller.address, 10);
@@ -249,8 +282,8 @@ describe('Trading', async () => {
         it('should successfully make a trade', async () => {
             const { trading, energyStorage, seller, buyer } = await deployContractFixture();
 
-            const _kWh = 5;
-            const _pricePerkWh = 1;
+            const _kWh = BigInt(5);
+            const _pricePerkWh = hre.ethers.parseEther("0.001");
             const _sourceTypeIds = [1, 2];
             const _totalPriceInEth = _kWh * _pricePerkWh;
             const _totalPriceInWei = hre.ethers.parseEther((_totalPriceInEth).toString());
@@ -290,8 +323,8 @@ describe('Trading', async () => {
         it('should revert to IncorrectPayment', async () => {
             const { trading, energyStorage, seller, buyer } = await deployContractFixture();
 
-            const _kWh = 5;
-            const _pricePerkWh = 1;
+            const _kWh = BigInt(5);
+            const _pricePerkWh = hre.ethers.parseEther("0.001");
             const _sourceTypeIds = [1, 2];
             const _totalPriceInEth = _kWh * _pricePerkWh;
             const _incorrectPayment = 1;
@@ -313,7 +346,7 @@ describe('Trading', async () => {
             const { trading, energyStorage, buyer, seller } = await deployContractFixture();
 
             const _kWh = 5;
-            const _pricePerkWh = 1;
+            const _pricePerkWh = hre.ethers.parseEther("0.001");
             const _sourceTypeIds = [1, 2];
 
             await energyStorage.connect(seller).addEnergy(seller.address, 10);
